@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Icon
@@ -80,23 +79,33 @@ fun CardMovie(movie: MovieModel, viewModel: PopularMoviesViewModel) {
         }
     }
 }
-
 @Composable
 fun StarRating(
-    rating: Int, // de 0 a 5
+    rating: Int,
     onRatingChanged: (Int) -> Unit
 ) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
     ) {
         for (i in 1..5) {
-            IconButton(onClick = { onRatingChanged(i) }) {
+            IconButton(
+                onClick = {
+                    // Si haces clic en la misma estrella del rating actual, reduce en 1
+                    if (i == rating) {
+                        onRatingChanged(maxOf(0, rating - 1))
+                    } else {
+                        onRatingChanged(i)
+                    }
+                },
+                modifier = Modifier.size(28.dp)
+            ) {
                 Icon(
                     imageVector = if (i <= rating) Icons.Filled.Star else Icons.Outlined.Star,
                     contentDescription = "$i estrellas",
-                    tint = if (i <= rating) Color(0xFFFFC107) else Color.Gray, // amarillo y gris
-                    modifier = Modifier.size(32.dp)
+                    tint = if (i <= rating) Color(0xFFFFC107) else Color.Gray,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }

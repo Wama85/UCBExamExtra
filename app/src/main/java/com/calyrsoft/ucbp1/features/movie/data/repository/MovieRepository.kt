@@ -10,32 +10,29 @@ class MovieRepository(
     private val movieLocalDataSource: MovieLocalDataSource
 ): IMoviesRepository {
     override suspend fun fetchPopularMovies(): Result<List<MovieModel>> {
-       return try {
-          val remoteMovies = movieRemoteDataSource.fetchPopularMovies()
-          remoteMovies.fold(
-              onSuccess = { movies ->
-                  val rateMovies = movies.map { movie ->
-                      val rating = movieLocalDataSource.getRatingForMovie(movie.id)
-                      movie.copy(  rating = rating)
-                  }
-                      .sortedByDescending { it.rating }
-                  Result.success(rateMovies)
-              },
-              onFailure = {
-                Result.failure(it)
-              }
-          )
-
-
-       } catch (e: Exception) {
-           Result.failure(e)
-       }
+        return try {
+            val remoteMovies = movieRemoteDataSource.fetchPopularMovies()
+            remoteMovies.fold(
+                onSuccess = { movies ->
+                    val rateMovies = movies.map { movie ->
+                        val localRating = movieLocalDataSource.getRatingForMovie(movie.id)
+                        // Usa el rating local si existe, si no usa 0
+                        movie.copy(rating = localRating)
+                    }
+                        .sortedByDescending { it.rating }
+                    Result.success(rateMovies)
+                },
+                onFailure = {
+                    Result.failure(it)
+                }
+            )
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     override suspend fun rateMovie(movieId: Int, rating: Int): Result<Unit> {
         movieLocalDataSource.rate(movieId, rating)
         return Result.success(Unit)
-
     }
-
 }
